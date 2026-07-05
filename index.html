@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Aura — Consistent Multi-Subject Video Generation</title>
-    <meta name="description" content="Aura: Consistent Multi-Subject Video Generation via VLM-Grounded Semantic Alignment. Anonymous NeurIPS 2026 submission supplementary material.">
+    <meta name="description" content="Aura: Consistent Multi-Subject Video Generation via VLM-Grounded Semantic Alignment. By Tencent Hunyuan.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#000000">
     <style>
@@ -63,6 +63,28 @@
             letter-spacing: 0.02em;
             margin-bottom: 40px;
         }
+        #intro .authors {
+            max-width: 920px;
+            margin: 0 auto 8px;
+            color: #d6d6d6;
+            font-size: 17px;
+            line-height: 1.75;
+        }
+        #intro .authors a { color: #8ecbff; }
+        #intro .authors sup { color: #66ccff; font-size: 0.72em; }
+        #intro .affiliation {
+            color: #66ccff;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        #intro .corresponding {
+            color: #888;
+            font-size: 13px;
+            letter-spacing: 0.01em;
+            margin-bottom: 40px;
+        }
+        #intro .corresponding sup { color: #66ccff; }
         .teaser {
             max-width: 980px;
             margin: 0 auto 36px;
@@ -367,7 +389,11 @@
 <section id="intro">
     <h1><img class="logo" src="./assets/aura_logo.png" alt="Aura"></h1>
     <h2>Consistent Multi-Subject Video Generation<br>via VLM-Grounded Semantic Alignment</h2>
-    <div class="submission-note">Anonymous NeurIPS 2026 Submission &middot; Supplementary Material</div>
+    <div class="authors">
+        Zixiang Zhou<sup>&dagger;</sup>, Zhentao Yu, Yifeng Ma, Hongmei Wang, Wenqing Yu, Cong Wang, Zilin Yang, Rui Chen, Jiarong Ou, Yezhou Liu, Yuan Zhou, Qinglin Lu
+    </div>
+    <div class="affiliation">Tencent Hunyuan</div>
+    <div class="corresponding"><sup>&dagger;</sup>Corresponding author: <a href="mailto:zxzhou0916@163.com">zxzhou0916@163.com</a></div>
 
     <p class="teaser">
         We present <strong>Aura</strong>, a unified framework for high-fidelity, identity-consistent
@@ -802,7 +828,7 @@ In the scene of [SCENE_1], [PERSON_1] carries a bag of cement, shot in a slightl
 
 
 <footer>
-    <div class="anon">Anonymous NeurIPS 2026 Submission &middot; Supplementary Material</div>
+    <div class="anon">Aura &middot; Tencent Hunyuan</div>
     <div>This page is fully self-contained: all videos and reference images are bundled in <code style="color:#aaa;">./assets/</code>.</div>
 </footer>
 
