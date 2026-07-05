@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Aura — Consistent Multi-Subject Video Generation</title>
+    <meta name="description" content="Aura: Consistent Multi-Subject Video Generation via VLM-Grounded Semantic Alignment. Anonymous NeurIPS 2026 submission supplementary material.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#000000">
+    <style>
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background-color: #444; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background-color: #666; }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            background-color: #000;
+            color: #e6e6e6;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+            font-size: 16px;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        a { color: #8ecbff; text-decoration: none; }
+        a:hover { color: #b8dcff; }
+
+        video { background-color: #000; width: 100%; display: block; }
+        img { display: block; max-width: 100%; }
+
+        /* ---------- Hero / Intro ---------- */
+        #intro {
+            padding: 110px 6% 70px;
+            text-align: center;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        #intro h1 {
+            margin: 0 0 18px;
+            line-height: 0;
+            font-size: 0; /* h1 text is replaced by logo image */
+        }
+        #intro h1 img.logo {
+            display: inline-block;
+            width: clamp(260px, 42vw, 540px);
+            height: auto;
+            max-width: 100%;
+            background-color: transparent;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        #intro h2 {
+            font-size: clamp(20px, 2.6vw, 30px);
+            font-weight: 400;
+            color: #d6d6d6;
+            margin: 0 auto 24px;
+            line-height: 1.4;
+            max-width: 1100px;
+        }
+        #intro .submission-note {
+            color: #888;
+            font-size: 15px;
+            letter-spacing: 0.02em;
+            margin-bottom: 40px;
+        }
+        .teaser {
+            max-width: 980px;
+            margin: 0 auto 36px;
+            color: #c8c8c8;
+            font-size: 17px;
+            line-height: 1.75;
+            text-align: left;
+            padding: 0 8px;
+        }
+        .teaser strong { color: #fff; font-weight: 600; }
+        .teaser .accent { color: #66ccff; font-weight: 500; }
+
+        /* ---------- Sections ---------- */
+        section.content-section {
+            max-width: 1760px;
+            margin: 0 auto;
+            padding: 60px 0 30px;
+        }
+        .section-title {
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 18px 6%;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            z-index: 100;
+            border-bottom: 1px solid #181818;
+            letter-spacing: -0.01em;
+        }
+        .section-desc {
+            padding: 22px 6% 4px;
+            color: #999;
+            font-size: 15px;
+            line-height: 1.7;
+            max-width: 1200px;
+        }
+        .section-desc .highlight { color: #fff; font-weight: 500; }
+
+        /* ---------- Examples Gallery ---------- */
+        .examples-wrap {
+            padding: 8px 6% 40px;
+        }
+        .example-card {
+            background: #0a0a0a;
+            border: 1px solid #1c1c1c;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 28px;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .example-card:hover {
+            border-color: #2c2c2c;
+            box-shadow: 0 6px 32px rgba(0, 0, 0, 0.5);
+        }
+        .example-row {
+            display: grid;
+            grid-template-columns: minmax(220px, 28%) 1fr;
+            gap: 18px;
+            align-items: stretch;
+            margin-bottom: 16px;
+        }
+        .example-ref {
+            background: #050505;
+            border: 1px solid #1c1c1c;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .example-ref .ref-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #888;
+            padding: 9px 12px;
+            border-bottom: 1px solid #1c1c1c;
+            background: #0a0a0a;
+        }
+        .example-ref .ref-img-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            background: #050505;
+        }
+        .example-ref img {
+            max-height: 320px;
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        .example-video {
+            background: #050505;
+            border: 1px solid #1c1c1c;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .example-video .vid-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #66ccff;
+            padding: 9px 12px;
+            border-bottom: 1px solid #1c1c1c;
+            background: #0a0a0a;
+        }
+        .example-video .vid-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+        .example-video video {
+            max-height: 540px;
+            width: 100%;
+            object-fit: contain;
+        }
+
+        .prompt-block {
+            background: #060606;
+            border: 1px solid #181818;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+        .prompt-block .prompt-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #888;
+            margin: 0 0 10px;
+        }
+        pre.prompt {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 12.5px;
+            line-height: 1.65;
+            color: #b8b8b8;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        pre.prompt::-webkit-scrollbar-thumb { background-color: #2a2a2a; }
+
+        /* ---------- Comparison Section ---------- */
+        .comparison-wrap {
+            padding: 8px 6% 40px;
+        }
+        .compare-block {
+            margin-bottom: 56px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .compare-block:last-child {
+            border-bottom: none;
+        }
+        .compare-header {
+            display: grid;
+            grid-template-columns: minmax(220px, 26%) 1fr;
+            gap: 18px;
+            background: #0a0a0a;
+            border: 1px solid #1c1c1c;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 22px;
+        }
+        .compare-header .ref-side {
+            background: #050505;
+            border: 1px solid #1c1c1c;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .compare-header .ref-side .ref-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #888;
+            padding: 9px 12px;
+            border-bottom: 1px solid #1c1c1c;
+            background: #0a0a0a;
+        }
+        .compare-header .ref-side .ref-img-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+        .compare-header .ref-side img {
+            max-height: 280px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .compare-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            row-gap: 14px;
+        }
+        .compare-row .method-tile {
+            background: #0a0a0a;
+            border: 1px solid #1c1c1c;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .method-tile.ours {
+            border-color: #2a4a6a;
+            box-shadow: 0 0 0 1px rgba(102, 204, 255, 0.18) inset;
+        }
+        .method-tile .vid-wrap {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+        }
+        .method-tile video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .method-label {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #cfcfcf;
+            padding: 8px 6px;
+            border-top: 1px solid #1c1c1c;
+            background: #080808;
+            letter-spacing: 0.02em;
+        }
+        .method-tile.ours .method-label {
+            color: #66ccff;
+            font-weight: 600;
+        }
+
+        /* ---------- Footer ---------- */
+        footer {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            padding: 50px 6% 40px;
+            border-top: 1px solid #161616;
+            margin-top: 30px;
+        }
+        footer .anon {
+            color: #888;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 900px) {
+            #intro { padding: 70px 5% 50px; }
+            .example-row,
+            .compare-header {
+                grid-template-columns: 1fr;
+            }
+            .example-ref img,
+            .compare-header .ref-side img {
+                max-height: 240px;
+            }
+            .compare-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 560px) {
+            .compare-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- Intro                                                         -->
+<!-- ============================================================ -->
+<section id="intro">
+    <h1><img class="logo" src="./assets/aura_logo.png" alt="Aura"></h1>
+    <h2>Consistent Multi-Subject Video Generation<br>via VLM-Grounded Semantic Alignment</h2>
+    <div class="submission-note">Anonymous NeurIPS 2026 Submission &middot; Supplementary Material</div>
+
+    <p class="teaser">
+        We present <strong>Aura</strong>, a unified framework for high-fidelity, identity-consistent
+        <span class="accent">multi-subject video generation</span>. Given heterogeneous reference images for
+        people, objects and scenes together with a structured director-level prompt, Aura synthesizes a video
+        that faithfully follows the script while preserving every subject&rsquo;s identity and the surrounding
+        scene context.
+    </p>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- Section 1: Examples                                           -->
+<!-- ============================================================ -->
+<section id="examples" class="content-section">
+    <div class="section-title">Examples</div>
+    <div class="section-desc">
+        For each example below we show the <span class="highlight">reference image</span> used as visual
+        conditioning, the <span class="highlight">full structured prompt</span> driving generation, and the
+        resulting <span class="highlight">video</span>. The reference image and prompt together define every
+        subject (person, object, scene) along with the director-level shot script. Hover a video to reveal
+        controls.
+    </div>
+
+    <div class="examples-wrap">
+
+        <!-- demo_1 -->
+        <div class="example-card">
+            <div class="example-row">
+                <div class="example-ref">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/examples/demo_1.png" alt="Reference image"></div>
+                </div>
+                <div class="example-video">
+                    <div class="vid-label">Generated Video</div>
+                    <div class="vid-wrap"><video muted loop playsinline preload="metadata" src="./assets/examples/demo_1.mp4"></video></div>
+                </div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: The shot begins with an extreme close-up of strumming on a vintage electric guitar, then smoothly tilts upward along the neck to focus on the protagonist&rsquo;s face in a bedroom — wearing headphones, singing with a pained, heartfelt expression.
+Global Style: Cinematic close-up visual style, ultra-high-definition hyper-realism.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+An Asian young male musician, with a pained yet deeply emotional facial expression, eyes tightly closed and brows slightly furrowed.
+
+SCENE_1:
+A dimly lit, softly illuminated private bedroom.
+
+OBJECT_1:
+A classic vintage sunburst electric guitar. The body features a tortoiseshell pickguard with marble-like texture and a wooden neck with clearly visible metal frets.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+The scene opens with an extreme macro focus on the body of [OBJECT_1] within the dimly lit, softly ambient [SCENE_1]. One hand of [PERSON_1] is vigorously and tensely strumming the strings of [OBJECT_1], fingers blurred by rapid motion, yet details such as the tortoiseshell pickguard and white single-coil pickups of [OBJECT_1] remain sharply visible. As the melody reaches its climax, the camera smoothly tilts and pans upward along the metal-fretted neck of [OBJECT_1] to [PERSON_1]&rsquo;s face. The shot finally settles on [PERSON_1], wearing a light-colored shirt and over-ear headphones, eyes closed, brows slightly furrowed, expression pained yet deeply emotional, mouth moving as he sings along — completely lost in the melody.</pre>
+            </div>
+        </div>
+
+        <!-- demo_2 -->
+        <div class="example-card">
+            <div class="example-row">
+                <div class="example-ref">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/examples/demo_2.png" alt="Reference image"></div>
+                </div>
+                <div class="example-video">
+                    <div class="vid-label">Generated Video</div>
+                    <div class="vid-wrap"><video muted loop playsinline preload="metadata" src="./assets/examples/demo_2.mp4"></video></div>
+                </div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: A character with a cool, ancient-style aura holds a pink-and-blue floral folding fan partially covering their face; the camera then zooms out to reveal them leaning sideways and gently fanning themselves against a dark background illuminated by flickering lights, with lighting accentuating their graceful silhouette, evoking a classical, hazy, and narrative atmosphere.
+Global Style: Cinematic high-definition quality, ancient-style realistic MV style. The visuals are delicate and soft, emphasizing detailed rendering of local elements. The content rhythm is slow and balanced with dynamic and static elements. Shooting techniques include close-ups and zoom-outs; the lighting style is highly layered, using localized highlights to illuminate the character's collarbone and waist; the background is dimly lit; the color palette emphasizes a strong contrast between cool and warm tones; the overall tone is mysterious, cool, and filled with the hazy beauty and narrative quality of Eastern classical aesthetics.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+A young Asian woman in ancient-style attire, with delicate features and a cool, elegant beauty. She wears a dark-toned ancient-style outfit with a slightly open neckline, made of soft fabric that reveals the graceful lines of her collarbone and waist; her long ancient-style hair is minimally adorned, with a few natural strands gently falling at the edges; her facial expression is cool and profound, exuding an elegant and mysterious aura.
+
+OBJECT_1:
+A traditional half-open ancient-style folding fan, with a finely textured surface and a clear depiction of interwoven pink and blue floral patterns in soft, delicate colors.
+
+SCENE_1:
+A dark-toned ancient-style indoor or night scene environment, dimly lit but rich in layers. In the background, faint flickering ancient-style lights (such as candlesticks or palace lanterns) serve as point sources, creating a strong contrast between cool and warm tones throughout the environment, evoking a mysterious, hazy, and narrative atmosphere.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+The camera focuses on [PERSON_1]'s delicate face; [PERSON_1]'s gaze is cool and profound, with a few strands of hair gently swaying in the breeze. [PERSON_1] holds [OBJECT_1] partially covering the side of their face, creating a hazy 'half-covered face' aesthetic. The camera zooms out, revealing [PERSON_1] leaning sideways against the dark ancient-style background of [SCENE_1], with lighting highlighting the collarbone and waist area to showcase graceful lines.</pre>
+            </div>
+        </div>
+
+        <!-- demo_3 -->
+        <div class="example-card">
+            <div class="example-row">
+                <div class="example-ref">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/examples/demo_3.png" alt="Reference image"></div>
+                </div>
+                <div class="example-video">
+                    <div class="vid-label">Generated Video</div>
+                    <div class="vid-wrap"><video muted loop playsinline preload="metadata" src="./assets/examples/demo_3.mp4"></video></div>
+                </div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: A young man wearing work clothes covered in cement dust carries a bag of cement on a construction site, then sets it down.
+Global Style: Belongs to the realistic film and television lens style, with a strong sense of documentary, shaping characters through everyday scenes, full of urban atmosphere and narrative tension, perfectly replicating the visual style of short-form video dramas.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+A young man wearing work clothes stained with cement dust.
+
+SCENE_1:
+A dusty construction site with exposed steel-reinforced concrete frames, a yellow tower crane in the background, and puddles on the ground reflecting harsh daylight.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+In the scene of [SCENE_1], [PERSON_1] carries a bag of cement, shot in a slightly upward close-up. The camera slowly tilts up from [PERSON_1]'s cement-dusted work clothes to [PERSON_1]'s left profile. [PERSON_1]'s eyes are calm as still water, jawline tensed, carrying the cement bag with one hand—shoulders trembling slightly but steps steady.</pre>
+            </div>
+        </div>
+
+        <!-- demo_4 -->
+        <div class="example-card">
+            <div class="example-row">
+                <div class="example-ref">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/examples/demo_4.png" alt="Reference image"></div>
+                </div>
+                <div class="example-video">
+                    <div class="vid-label">Generated Video</div>
+                    <div class="vid-wrap"><video muted loop playsinline preload="metadata" src="./assets/examples/demo_4.mp4"></video></div>
+                </div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: A figure performs a flowing ink-wash Taiji staff technique amidst ink-wash landscapes.
+Global Style: Eastern ink wash aesthetics, dynamic ink shadow energy and flowing brushstroke effects, high-definition and delicate, with a tone full of grace, freedom, and power.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+An Asian middle-aged man with neat short hair, natural skin tone, bright eyes, and a gentle expression.
+
+OBJECT_1:
+A traditional wooden long staff.
+
+SCENE_1:
+A calm lake surface surrounded by mountains, with mist swirling around.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+Begin with a wide shot of [SCENE_1], where [PERSON_1] stands at the center of the calm lake, surrounded by encircling mountains and swirling mist. Then cut to a medium shot: [PERSON_1] wields [OBJECT_1] performing a fluid, ink-wash Taiji staff routine; the camera circles around the character&rsquo;s movements, enveloped by flowing black-and-white ink-shadow energy, with each move trailing elegant, free-flowing ink-brushstroke effects.</pre>
+            </div>
+        </div>
+
+        <!-- demo_5 -->
+        <div class="example-card">
+            <div class="example-row">
+                <div class="example-ref">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/examples/demo_5.png" alt="Reference image"></div>
+                </div>
+                <div class="example-video">
+                    <div class="vid-label">Generated Video</div>
+                    <div class="vid-wrap"><video muted loop playsinline preload="metadata" src="./assets/examples/demo_5.mp4"></video></div>
+                </div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: A girl hangs a white shirt on the balcony of an old European apartment, with the sunset backlight creating a warm, healing, everyday scene as the fabric gently flutters and glows.
+Global Style: Warm, healing cinematic photography style, backlit golden hour with soft warm tones, 8K ultra-high-definition delicate light and shadow layers, romantic and aesthetic everyday life, filled with a serene, happy, and cozy atmosphere.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+An Asian young woman with long straight hair naturally draped, natural skin tone, expressive eyes, and a gentle, calm expression.
+
+SCENE_1:
+An old European apartment balcony covered in green climbing vines, vintage railings, warm-toned city buildings in the background, bathed in golden hour sunlight.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+Medium shot, fixed camera begins with [PERSON_1] standing on the balcony of [SCENE_1], golden sunset backlight streaming from behind as she hangs a white shirt on the clothesline. Beside her is a vintage wooden bucket; the balcony is covered in green vines, with warm-toned city buildings in the background. The camera slowly pushes in. Then cuts to a close-up: the white shirt gently sways on the line, warm sunset light penetrating the fabric to create soft, translucent lighting and shadows, with crisp crease textures.</pre>
+            </div>
+        </div>
+
+        <!-- demo_6 -->
+        <div class="example-card">
+            <div class="example-row">
+                <div class="example-ref">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/examples/demo_6.png" alt="Reference image"></div>
+                </div>
+                <div class="example-video">
+                    <div class="vid-label">Generated Video</div>
+                    <div class="vid-wrap"><video muted loop playsinline preload="metadata" src="./assets/examples/demo_6.mp4"></video></div>
+                </div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: A woman wearing a light camel-colored scarf stands in front of a bright floor-to-ceiling window; in backlight, a gentle breeze lifts the scarf, and the camera pushes in to reveal her gentle side-profile smile.
+Global Style: Cinematic, aesthetically beautiful style, high dynamic range (HDR), fresh and natural tone. The image is filled with airiness, warm and bright color palette, with soft backlighting as the lighting style.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+A young Asian woman with long black hair, wearing a blue-and-white diamond-patterned top.
+
+SCENE_1:
+A bright indoor space featuring large floor-to-ceiling windows. Green plants are visible outside, and white curtains are present inside.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+In front of the bright floor-to-ceiling window in [SCENE_1], a cinematic side close-up shot shows [PERSON_1] standing, wearing a thick light camel-colored knitted scarf around her neck. Soft backlighting streams in from the window, illuminating the texture of [PERSON_1]'s flowing hair and scarf, creating a warm rim light. A gentle breeze blows, causing one end of the scarf to elegantly flutter backward in slow-motion fluidity. The camera then slowly pushes in, focusing on [PERSON_1]'s serene and gentle side profile, with a faint, healing smile on her lips. Behind [PERSON_1], the white curtains and greenery outside [SCENE_1] are softly blurred, filling the frame with airiness, rendered in 8K resolution, high dynamic range, and a fresh, natural style.</pre>
+            </div>
+        </div>
+
+        <!-- demo_7 -->
+        <div class="example-card">
+            <div class="example-row">
+                <div class="example-ref">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/examples/demo_7.png" alt="Reference image"></div>
+                </div>
+                <div class="example-video">
+                    <div class="vid-label">Generated Video</div>
+                    <div class="vid-wrap"><video muted loop playsinline preload="metadata" src="./assets/examples/demo_7.mp4"></video></div>
+                </div>
+            </div>
+            <div class="prompt-block">
+                <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: On a cyberpunk-style rainy night street, the mech Nezha suddenly turns around amid flickering neon lights, revealing a violent red energy field surrounding its body — delivering an extremely powerful visual impact.
+Global Style: High-quality CG/cinematic visual style blending cyberpunk and Chinese aesthetics. Extremely sharp and clear image quality. Filled with a tense atmosphere. Dominated by tech-inspired cool tones (such as cyan-blue), creating a strong color contrast with dazzling red energy glows; lighting style is dark and damp, overall tone is cool, rebellious, and visually striking.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+A young Asian male dressed as a cyberpunk version of Nezha. Wearing a cyberpunk exoskeleton armor rich in metallic texture and mechanical details, with rainwater flowing down its mechanical surface.
+
+SCENE_1:
+A futuristic Asian city. Environment is dark and damp, pouring with heavy rain. Towering buildings and giant Chinese neon signs dominate the background, with occasional sci-fi hovercars zipping through the air. The ground is flooded with water, perfectly reflecting the dazzling neon lights around.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+The shot begins with a medium low-angle rear view of [PERSON_1] standing on the rainy night street of [SCENE_1], rain trickling down their mechanical exoskeleton, with giant Chinese neon signs and passing hovercars in the background. Then [PERSON_1] suddenly turns around, and the camera tilts up to a close-up of [PERSON_1]'s face. The red energy field surrounding [PERSON_1]'s body pulses violently. The final frame freezes on [PERSON_1]'s defiant face, with [SCENE_1]'s neon night scene softly blurred in the background — the red energy field effects deliver intense visual impact.</pre>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- Section 2: Qualitative Comparison                             -->
+<!-- ============================================================ -->
+<section id="comparison" class="content-section">
+    <div class="section-title">Qualitative Comparison</div>
+    <div class="section-desc">
+        We compare <span class="highlight">Aura (Ours)</span> against six recent baselines.
+        Each block shows the shared <span class="highlight">reference image</span> and
+        <span class="highlight">prompt</span> at the top, followed by results from every method. Videos within a block are time-synchronized: pressing play on any tile starts all of them
+        together for a fair side-by-side comparison.
+    </div>
+
+    <div class="comparison-wrap">
+
+        <!-- compare_1 -->
+        <div class="compare-block">
+            <div class="compare-header">
+                <div class="ref-side">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/comparison/reference/compare_1.png" alt="Reference image"></div>
+                </div>
+                <div class="prompt-block">
+                    <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: The shot begins with an extreme close-up of strumming on a vintage electric guitar, then smoothly tilts upward along the neck to focus on the protagonist&rsquo;s face in a bedroom — wearing headphones, singing with a pained, heartfelt expression.
+Global Style: Cinematic close-up visual style, ultra-high-definition hyper-realism.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+An Asian young male musician, with a pained yet deeply emotional facial expression, eyes tightly closed and brows slightly furrowed.
+
+SCENE_1:
+A dimly lit, softly illuminated private bedroom.
+
+OBJECT_1:
+A classic vintage sunburst electric guitar. The body features a tortoiseshell pickguard with marble-like texture and a wooden neck with clearly visible metal frets.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+The scene opens with an extreme macro focus on the body of [OBJECT_1] within the dimly lit, softly ambient [SCENE_1]. One hand of [PERSON_1] is vigorously and tensely strumming the strings of [OBJECT_1], fingers blurred by rapid motion, yet details such as the tortoiseshell pickguard and white single-coil pickups of [OBJECT_1] remain sharply visible. As the melody reaches its climax, the camera smoothly tilts and pans upward along the metal-fretted neck of [OBJECT_1] to [PERSON_1]&rsquo;s face. The shot finally settles on [PERSON_1], wearing a light-colored shirt and over-ear headphones, eyes closed, brows slightly furrowed, expression pained yet deeply emotional, mouth moving as he sings along — completely lost in the melody.</pre>
+                </div>
+            </div>
+
+            <div class="compare-row">
+                <div class="method-tile ours">
+                    <div class="vid-wrap"><video class="sync-1 ref-1" muted loop playsinline preload="metadata" src="./assets/comparison/ours/compare_1.mp4"></video></div>
+                    <div class="method-label">Aura (Ours)</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-1" muted loop playsinline preload="metadata" src="./assets/comparison/kaleido/compare_1.mp4"></video></div>
+                    <div class="method-label">Kaleido</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-1" muted loop playsinline preload="metadata" src="./assets/comparison/humo/compare_1.mp4"></video></div>
+                    <div class="method-label">HuMo</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-1" muted loop playsinline preload="metadata" src="./assets/comparison/magref/compare_1.mp4"></video></div>
+                    <div class="method-label">MAGREF</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-1" muted loop playsinline preload="metadata" src="./assets/comparison/refalign/compare_1.mp4"></video></div>
+                    <div class="method-label">RefAlign</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-1" muted loop playsinline preload="metadata" src="./assets/comparison/wan2_7/compare_1.mp4"></video></div>
+                    <div class="method-label">Wan 2.7</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- compare_2 -->
+        <div class="compare-block">
+            <div class="compare-header">
+                <div class="ref-side">
+                    <div class="ref-label">Reference</div>
+                    <div class="ref-img-wrap"><img src="./assets/comparison/reference/compare_2.png" alt="Reference image"></div>
+                </div>
+                <div class="prompt-block">
+                    <div class="prompt-label">Prompt</div>
+<pre class="prompt">[Global Setup]
+Overall Scene: A young man wearing work clothes covered in cement dust carries a bag of cement on a construction site, then sets it down.
+Global Style: Belongs to the realistic film and television lens style, with a strong sense of documentary, shaping characters through everyday scenes, full of urban atmosphere and narrative tension, perfectly replicating the visual style of short-form video dramas.
+
+
+[Cast &amp; Setting Introduction]
+
+PERSON_1:
+A young man wearing work clothes stained with cement dust.
+
+SCENE_1:
+A dusty construction site with exposed steel-reinforced concrete frames, a yellow tower crane in the background, and puddles on the ground reflecting harsh daylight.
+
+
+[Shot Narrative Script]
+
+(Shot 1)
+Time Range: [0s – 5.0s]
+In the scene of [SCENE_1], [PERSON_1] carries a bag of cement, shot in a slightly upward close-up. The camera slowly tilts up from [PERSON_1]'s cement-dusted work clothes to [PERSON_1]'s left profile. [PERSON_1]'s eyes are calm as still water, jawline tensed, carrying the cement bag with one hand—shoulders trembling slightly but steps steady.</pre>
+                </div>
+            </div>
+
+            <div class="compare-row">
+                <div class="method-tile ours">
+                    <div class="vid-wrap"><video class="sync-2 ref-2" muted loop playsinline preload="metadata" src="./assets/comparison/ours/compare_2.mp4"></video></div>
+                    <div class="method-label">Aura (Ours)</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-2" muted loop playsinline preload="metadata" src="./assets/comparison/kaleido/compare_2.mp4"></video></div>
+                    <div class="method-label">Kaleido</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-2" muted loop playsinline preload="metadata" src="./assets/comparison/humo/compare_2.mp4"></video></div>
+                    <div class="method-label">HuMo</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-2" muted loop playsinline preload="metadata" src="./assets/comparison/magref/compare_2.mp4"></video></div>
+                    <div class="method-label">MAGREF</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-2" muted loop playsinline preload="metadata" src="./assets/comparison/refalign/compare_2.mp4"></video></div>
+                    <div class="method-label">RefAlign</div>
+                </div>
+                <div class="method-tile">
+                    <div class="vid-wrap"><video class="sync-2" muted loop playsinline preload="metadata" src="./assets/comparison/wan2_7/compare_2.mp4"></video></div>
+                    <div class="method-label">Wan 2.7</div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+</section>
+
+
+<footer>
+    <div class="anon">Anonymous NeurIPS 2026 Submission &middot; Supplementary Material</div>
+    <div>This page is fully self-contained: all videos and reference images are bundled in <code style="color:#aaa;">./assets/</code>.</div>
+</footer>
+
+
+<script>
+// =====================================================================
+// 1) Per-comparison sync: videos sharing a `sync-N` class play together.
+// =====================================================================
+function setupSync(groupClass) {
+    const videos = Array.from(document.querySelectorAll('video.' + groupClass));
+    if (videos.length === 0) return;
+    let syncing = false;
+
+    videos.forEach(v => {
+        // Mirror play state only. Do NOT touch currentTime here: doing so
+        // creates a feedback loop where each baseline's `play` event keeps
+        // pulling the others back to its own (slightly drifting) time, which
+        // shows up as constant visual jitter.
+        v.addEventListener('play', () => {
+            if (syncing) return;
+            syncing = true;
+            videos.forEach(o => {
+                if (o === v) return;
+                if (o.paused && !o.ended) o.play().catch(() => {});
+            });
+            syncing = false;
+        });
+
+        v.addEventListener('pause', () => {
+            if (syncing) return;
+            // ignore pauses caused by `ended` on non-loop videos
+            if (v.ended) return;
+            syncing = true;
+            videos.forEach(o => {
+                if (o === v) return;
+                if (!o.paused) o.pause();
+            });
+            syncing = false;
+        });
+
+        // Only propagate explicit seeks (user scrub or master rewind on loop).
+        // The tolerance check below makes sure the cascade of programmatic
+        // currentTime writes terminates after one round.
+        v.addEventListener('seeked', () => {
+            if (syncing) return;
+            syncing = true;
+            const t = v.currentTime;
+            videos.forEach(o => {
+                if (o === v) return;
+                try { if (Math.abs(o.currentTime - t) > 0.15) o.currentTime = t; } catch (e) {}
+            });
+            syncing = false;
+        });
+    });
+}
+
+// =====================================================================
+// 2) Unify aspect ratio inside a comparison row to the reference (Ours)
+//    video, so all baseline tiles align cleanly.
+// =====================================================================
+function unifyAspect(refClass, groupClass) {
+    const ref = document.querySelector('video.' + refClass);
+    if (!ref) return;
+    const tiles = Array.from(document.querySelectorAll('video.' + groupClass))
+        .map(v => v.closest('.vid-wrap'))
+        .filter(Boolean);
+    if (tiles.length === 0) return;
+
+    const apply = () => {
+        const w = ref.videoWidth, h = ref.videoHeight;
+        if (!w || !h) return;
+        const ratio = w + ' / ' + h;
+        tiles.forEach(t => { t.style.aspectRatio = ratio; });
+    };
+    if (ref.readyState >= 1) apply();
+    else ref.addEventListener('loadedmetadata', apply, { once: true });
+}
+
+// =====================================================================
+// 2b) Use the Ours (ref-N) video as the master clock for each comparison
+//     group. Native `loop` is disabled on every video in the group, and
+//     there is NO auto-loop. When Ours finishes, every video in the group
+//     stays on its current frame (shorter baselines on their last frame,
+//     longer ones cut off at Ours' duration). The viewer can then press
+//     play on any video to replay the whole comparison from t=0 in lock-
+//     step. This avoids the cascade of events that loop-wrap behaviour
+//     was triggering across staggered durations.
+// =====================================================================
+function setupGroupClock(refClass, groupClass) {
+    const master = document.querySelector('video.' + refClass);
+    if (!master) return;
+    const groupVideos = Array.from(document.querySelectorAll('video.' + groupClass));
+    groupVideos.forEach(v => {
+        v.loop = false;
+        v.removeAttribute('loop');
+    });
+
+    // Track when master has reached the end. We only clear the flag on a
+    // user scrub that lands somewhere in the *middle* of the timeline —
+    // crucially NOT on a seek to ~0, because the browser auto-rewinds an
+    // ended video to 0 as part of `.play()`, and that auto-rewind would
+    // otherwise look identical to a user scrub and silently disarm the
+    // replay logic (resulting in only master being able to play again).
+    let masterFinished = false;
+    master.addEventListener('ended', () => { masterFinished = true; });
+    master.addEventListener('seeking', () => {
+        const dur = master.duration;
+        if (!dur) return;
+        const t = master.currentTime;
+        if (t > 0.5 && t < dur - 0.2) masterFinished = false;
+    });
+
+    // When any video in the group transitions to "playing" while master
+    // has already finished, treat it as a replay request: rewind every
+    // video in the group back to 0 and start them together. setupSync's
+    // existing play/seeked handlers keep the rest of the group aligned.
+    groupVideos.forEach(v => {
+        v.addEventListener('play', () => {
+            if (!masterFinished) return;
+            masterFinished = false;
+            groupVideos.forEach(o => {
+                try { o.currentTime = 0; } catch (e) {}
+            });
+            groupVideos.forEach(o => {
+                if (o.paused) o.play().catch(() => {});
+            });
+        });
+    });
+}
+
+// =====================================================================
+// 3) Hover-to-show-controls + global single-video active rule.
+//    A playing video pauses every other video that is NOT in the same
+//    sync-group.
+// =====================================================================
+function setupVideoUX() {
+    const allVideos = Array.from(document.querySelectorAll('video'));
+    allVideos.forEach(v => {
+        v.controls = false;
+
+        v.addEventListener('mouseenter', function () { this.controls = true; });
+        v.addEventListener('mouseleave', function () { if (this.paused) this.controls = false; });
+        v.addEventListener('touchstart', function () { this.controls = true; }, { passive: true });
+
+        v.addEventListener('play', () => {
+            const syncClasses = Array.from(v.classList).filter(c => c.startsWith('sync-'));
+            allVideos.forEach(o => {
+                if (o === v || o.paused) return;
+                if (syncClasses.length > 0) {
+                    const oSync = Array.from(o.classList).filter(c => c.startsWith('sync-'));
+                    const sameGroup = syncClasses.some(c => oSync.includes(c));
+                    if (sameGroup) return;
+                }
+                o.pause();
+            });
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // setupGroupClock first so its `play` listeners (which rewind a finished
+    // group on replay) run before setupSync's state-mirroring `play` handler.
+    setupGroupClock('ref-1', 'sync-1');
+    setupGroupClock('ref-2', 'sync-2');
+    ['sync-1', 'sync-2'].forEach(setupSync);
+    unifyAspect('ref-1', 'sync-1');
+    unifyAspect('ref-2', 'sync-2');
+    setupVideoUX();
+});
+</script>
+</body>
+</html>
